@@ -246,3 +246,45 @@ button:focus-visible {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+.chart {
+  margin: 0 0 32px;
+}
+
+.chart h2 {
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  max-width: 760px;
+  height: auto;
+}
+
+.chart figcaption {
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+.chart-grid {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.chart-axis-label {
+  fill: var(--muted);
+  font-size: 11px;
+}
+
+.chart-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.chart-bar {
+  fill: var(--accent);
+}
