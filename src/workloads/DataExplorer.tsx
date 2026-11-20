@@ -43,6 +43,7 @@ export default function DataExplorer({ initialVirtualised = true }: DataExplorer
   const periods = useMemo(() => getPeriods(rows), [rows]);
   const visible = useMemo(() => queryRows(rows, query), [rows, query]);
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Virtual returns functions the React Compiler cannot memoise; its state only drives rendering here
   const virtualizer = useVirtualizer({
     count: visible.length,
     getScrollElement: () => scrollRef.current,

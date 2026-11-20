@@ -1,75 +1,56 @@
-# React + TypeScript + Vite
+# Atlas: a pluggable data workspace shell
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A small browser app, written in TypeScript and React, where a shell hosts "workloads" that plug into it. It explores about 7,000 hourly air quality readings with a sortable, filterable table and charts.
 
-Currently, two official plugins are available:
+**Live demo:** https://pubaaaali.github.io/atlas-shell/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+![Atlas shell home screen with workload tiles](docs/home.png)
 
-## React Compiler
+## What it demonstrates
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **A typed plugin contract.** Each workload describes itself (`id`, `title`, `icon`, a lazy `load()`), and the shell renders tiles, navigation and routes from the registry. The registry rejects duplicate ids and caches each lazy component so its identity stays stable between renders.
+- **Code splitting.** A workload's code downloads only when it is opened.
+- **Manifest-loaded plugins.** `public/plugins/manifest.json` declares extra workloads. The manifest is treated as untrusted input: every entry is validated, bad entries are skipped with a console warning, a plugin can never replace an existing workload, and a broken manifest never stops the app from starting. Manifest plugins are declarative (summary widgets), so no remote code runs.
+- **Table performance.** The Data Explorer can virtualise its rows (TanStack Virtual) and shows how many rows are in the DOM and how long the last update took to paint.
+- **Accessibility.** Skip link, visible focus styles, labelled controls, `aria-sort` on sortable headers, `aria-rowcount` and `aria-rowindex` on the virtualised table, and a text summary under each chart.
+- **Engineering hygiene.** Strict TypeScript, ESLint, 43 tests (Vitest and React Testing Library), and CI on every pull request.
 
-## Expanding the ESLint configuration
+## Measured performance
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Sorting the 6,941-row table by CO, 10 clicks per mode, production build (`npm run build && npm run preview`), Chrome 158 on MacBook Air (Apple M1), 20 November 2026:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+| | Rows in the DOM | Median click-to-paint | Range |
+|---|---|---|---|
+| Virtualisation off | 6,941 | 568 ms | 534 to 713 ms |
+| Virtualisation on | 26 | 15 ms | 12 to 17 ms |
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+With virtualisation on, the number of rows in the DOM depends on the window height (26 at the size used).
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Click-to-paint is measured with two `requestAnimationFrame` calls, so about one to two frames of browser scheduling are included in both numbers. This is a small, single-machine measurement, not a benchmark.
 
+## Run it
+
+```bash
+npm install
+npm run dev      # http://localhost:5173/atlas-shell/
+npm test
+npm run build && npm run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+## Data
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Hourly readings from the UCI Machine Learning Repository's Air Quality dataset (De Vito et al., 2008). Values of -200 mark missing readings and are treated as missing, not as numbers. The app uses a cleaned copy of 6,941 rows, produced from the roughly 9,300 raw hourly readings in a university data visualisation project. Check the dataset page for its current licence terms and keep the attribution.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Project layout
 
-```
+- `src/shell`: layout, routing, tile home screen, workload registry
+- `src/workloads`: Data Explorer and Chart View
+- `src/plugins`: manifest validation and manifest-loaded workloads
+- `src/data`: CSV parsing, sorting and filtering, aggregation
+- `src/charts`: SVG chart component
+
+## Known limitations
+
+- Manifest plugins are limited to declarative summary widgets by design.
+- Charts are hand-drawn SVG and have no tooltips or zoom.
+- Performance numbers come from one machine and one browser.
