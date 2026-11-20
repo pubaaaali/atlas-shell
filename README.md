@@ -13,16 +13,18 @@ A small browser app, written in TypeScript and React, where a shell hosts "workl
 - **Manifest-loaded plugins.** `public/plugins/manifest.json` declares extra workloads. The manifest is treated as untrusted input: every entry is validated, bad entries are skipped with a console warning, a plugin can never replace an existing workload, and a broken manifest never stops the app from starting. Manifest plugins are declarative (summary widgets), so no remote code runs.
 - **Table performance.** The Data Explorer can virtualise its rows (TanStack Virtual) and shows how many rows are in the DOM and how long the last update took to paint.
 - **Accessibility.** Skip link, visible focus styles, labelled controls, `aria-sort` on sortable headers, `aria-rowcount` and `aria-rowindex` on the virtualised table, and a text summary under each chart.
-- **Engineering hygiene.** Strict TypeScript, ESLint, [N] tests (Vitest and React Testing Library), and CI on every pull request.
+- **Engineering hygiene.** Strict TypeScript, ESLint, 43 tests (Vitest and React Testing Library), and CI on every pull request.
 
 ## Measured performance
 
-Sorting the 6,941-row table by CO, 10 clicks per mode, production build (`npm run build && npm run preview`), [browser and version] on [Mac model], 20 November 2026:
+Sorting the 6,941-row table by CO, 10 clicks per mode, production build (`npm run build && npm run preview`), Chrome 158 on MacBook Air (Apple M1), 20 November 2026:
 
 | | Rows in the DOM | Median click-to-paint | Range |
 |---|---|---|---|
-| Virtualisation off | [6,941] | 568 ms | 534 to 713 ms |
-| Virtualisation on | [N] | 15 ms | 12 to 17 ms |
+| Virtualisation off | 6,941 | 568 ms | 534 to 713 ms |
+| Virtualisation on | 26 | 15 ms | 12 to 17 ms |
+
+With virtualisation on, the number of rows in the DOM depends on the window height (26 at the size used).
 
 Click-to-paint is measured with two `requestAnimationFrame` calls, so about one to two frames of browser scheduling are included in both numbers. This is a small, single-machine measurement, not a benchmark.
 
