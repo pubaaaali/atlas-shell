@@ -19,17 +19,18 @@ function stubFetch(body: string, ok = true) {
 
 afterEach(() => vi.unstubAllGlobals());
 
+// jsdom has no layout, so these tests turn virtualisation off to see every row.
 describe("DataExplorer", () => {
   it("shows the loaded readings", async () => {
     stubFetch(CSV);
-    render(<DataExplorer />);
+    render(<DataExplorer initialVirtualised={false} />);
     expect(await screen.findByText(/showing 3 of 3 readings/i)).toBeInTheDocument();
   });
 
   it("filters by period", async () => {
     stubFetch(CSV);
     const user = userEvent.setup();
-    render(<DataExplorer />);
+    render(<DataExplorer initialVirtualised={false} />);
     await screen.findByText(/showing 3 of 3/i);
     await user.selectOptions(screen.getByLabelText(/period/i), "Night");
     expect(screen.getByText(/showing 1 of 3/i)).toBeInTheDocument();
@@ -38,16 +39,23 @@ describe("DataExplorer", () => {
   it("sorts when a column header is clicked", async () => {
     stubFetch(CSV);
     const user = userEvent.setup();
-    render(<DataExplorer />);
+    render(<DataExplorer initialVirtualised={false} />);
     await screen.findByText(/showing 3 of 3/i);
     await user.click(screen.getByRole("button", { name: /^CO/ }));
     const bodyRows = screen.getAllByRole("row").slice(1);
     expect(within(bodyRows[0]).getByText("0.5")).toBeInTheDocument();
   });
 
+  it("renders every row when virtualisation is off", async () => {
+    stubFetch(CSV);
+    render(<DataExplorer initialVirtualised={false} />);
+    expect(await screen.findByText(/rows in the dom: 3 of 3/i)).toBeInTheDocument();
+    expect(screen.getAllByRole("row")).toHaveLength(4);
+  });
+
   it("reports a load failure", async () => {
     stubFetch("", false);
-    render(<DataExplorer />);
+    render(<DataExplorer initialVirtualised={false} />);
     expect(await screen.findByRole("alert")).toHaveTextContent(/could not load/i);
   });
 });
