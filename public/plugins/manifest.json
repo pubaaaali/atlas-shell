@@ -1,0 +1,20 @@
+{
+  "plugins": [
+    {
+      "id": "co-summary",
+      "title": "CO Summary",
+      "description": "Minimum, maximum and average carbon monoxide.",
+      "icon": "🧪",
+      "kind": "summary",
+      "metric": "co"
+    },
+    {
+      "id": "temperature-summary",
+      "title": "Temperature Summary",
+      "description": "Minimum, maximum and average temperature.",
+      "icon": "🌡️",
+      "kind": "summary",
+      "metric": "temperature"
+    }
+  ]
+}
